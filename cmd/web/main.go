@@ -8,22 +8,21 @@ import (
 		"flag"
 		"os"
 		"fmt"
+		"com.sjbabadi/snippetbox/pkg/models/pg"
 		_ "github.com/lib/pq"
 )
 
 type application struct {
 	errorLog *log.Logger
 	infoLog *log.Logger
+	snippets *postgres.SnippetModel
 }
 
 func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	app := &application{
-		errorLog: errorLog,
-		infoLog: infoLog,
-	}
+
 
 	const (
 		host = "localhost"
@@ -38,15 +37,20 @@ func main() {
 
 	db, err := sql.Open("postgres", connectionStr)
 	if err != nil {
-		app.errorLog.Println(err.Error())
+		errorLog.Println(err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		app.errorLog.Println(err.Error())
+		errorLog.Println(err.Error())
 	}
 	
-	app.infoLog.Println("Database successfully connected!")
+	infoLog.Println("Database successfully connected!")
+	app := &application{
+		errorLog: errorLog,
+		infoLog: infoLog,
+		snippets: &postgres.SnippetModel{DB: db},
+	}
 	defer db.Close()
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
