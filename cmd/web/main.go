@@ -19,6 +19,8 @@ type application struct {
 }
 
 func main() {
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
@@ -26,15 +28,17 @@ func main() {
 
 	const (
 		host = "localhost"
-		port = 5432
+		port = "5432"
 		user = "sjbabadi"
+		password = ""
 		dbname = "snippetbox_dev"
 	)
 
-	connectionStr := fmt.Sprint("host=%s port=%s user=%s "+
+	connectionStr := fmt.Sprintf("host=%s port=%s user=%s "+
 		"dbname=%s sslmode=disable",
 		host, port, user, dbname)
 
+	//db, err := sql.Open("postgres", "postgres://sjbabadi:@localhost:5432/snippetbox_dev")
 	db, err := sql.Open("postgres", connectionStr)
 	if err != nil {
 		errorLog.Println(err.Error())
@@ -42,7 +46,7 @@ func main() {
 
 	err = db.Ping()
 	if err != nil {
-		errorLog.Println(err.Error())
+		errorLog.Fatal(err)
 	}
 	
 	infoLog.Println("Database successfully connected!")
@@ -52,10 +56,6 @@ func main() {
 		snippets: &postgres.SnippetModel{DB: db},
 	}
 	defer db.Close()
-
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	flag.Parse()
-
 
 	srv := &http.Server{
 		Addr: *addr,
