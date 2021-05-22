@@ -1,10 +1,12 @@
 package postgres
 
 import (
-	"log"
 	"database/sql"
-	"com.sjbabadi/snippetbox/pkg/models"
 	"errors"
+	"fmt"
+	"log"
+
+	"com.sjbabadi/snippetbox/pkg/models"
 )
 
 type SnippetModel struct {
@@ -31,9 +33,9 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 	WHERE expires_at > now() AND id = $1`
 
 	row := m.DB.QueryRow(stmt, id)
-
 	s := &models.Snippet{}
 	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.CreatedAt, &s.ExpiresAt)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -41,10 +43,35 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 			return nil, err
 		}
 	}
+	fmt.Println(s)
 	return s, nil
 }
 
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
-	return nil, nil
-}
+	stmt := `SELECT id, title, content, created_at, expires_at FROM snippets
+	WHERE expires_at > now() ORDER BY created_at DESC LIMIT 10`
 
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	snippets := []*models.Snippet{}
+
+	for rows.Next() {
+		s := &models.Snippet{}
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.CreatedAt, &s.ExpiresAt)
+		if err != nil {
+			return nil, err
+		}
+		snippets = append(snippets, s)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
+}
