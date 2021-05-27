@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"text/template"
 
 	"com.sjbabadi/snippetbox/pkg/models"
 )
@@ -61,7 +62,26 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%v", snippet)
+	data := &templateData{Snippet: snippet}
+
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	// parse the template files
+	templates, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// execute the templates - pass in the snippet data models.Snippet struct as a param
+	err = templates.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {

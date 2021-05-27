@@ -29,8 +29,11 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 }
 
 func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
+	// stmt := `SELECT id, title, content, created_at, expires_at FROM snippets
+	// WHERE expires_at > now() AND id = $1`
+
 	stmt := `SELECT id, title, content, created_at, expires_at FROM snippets
-	WHERE expires_at > now() AND id = $1`
+	WHERE id = $1`
 
 	row := m.DB.QueryRow(stmt, id)
 	s := &models.Snippet{}
