@@ -12,7 +12,7 @@ env:
   BUILDER: paketobuildpacks/builder:base # paketobuildpacks/builder:base
   DB_NAME: snippetbox_dev # request_bin
   COMMAND: '[]'
-  ENTRYPOINT: '["./cmd/web"]'
+  ENTRYPOINT: '["/cmd/web"]'
   SUBNET_NAME: gander-apps # Gander-Subnet
   SG_NAME: gander-apps-cluster # Gander-Security-3
   FS_NAME: gander-apps # GanderFS
