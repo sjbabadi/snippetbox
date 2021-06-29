@@ -1,3 +1,1 @@
-# snippetbox
-
-test test
+# Snippetbox
